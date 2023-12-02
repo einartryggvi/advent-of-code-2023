@@ -127,7 +127,7 @@ pub mod part2 {
             result += line_to_digit(line)
         }
 
-        println!("Day 1 Part 2 result: {}", result);
+        println!("Day 1 Part 2: {}", result);
     }
 
     #[cfg(test)]
