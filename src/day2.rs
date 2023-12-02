@@ -105,7 +105,10 @@ pub mod part1 {
         let mut result: i32 = 0;
         let re = Regex::new(r"^Game ([0-9]+): (.*)$").unwrap();
         for line in contents.split("\n").into_iter() {
-            let (_, [game_id, reveals_str]) = re.captures(line).expect("adsfasdf").extract();
+            let (_, [game_id, reveals_str]) = re
+                .captures(line)
+                .expect("Failed to parse game ID")
+                .extract();
 
             let mut reveals = Vec::new();
 
@@ -136,7 +139,10 @@ pub mod part2 {
         let mut result: i32 = 0;
         let re = Regex::new(r"^Game ([0-9]+): (.*)$").unwrap();
         for line in contents.split("\n").into_iter() {
-            let (_, [game_id, reveals_str]) = re.captures(line).expect("adsfasdf").extract();
+            let (_, [game_id, reveals_str]) = re
+                .captures(line)
+                .expect("Failed to parse game ID")
+                .extract();
 
             let mut reveals = Vec::new();
 
