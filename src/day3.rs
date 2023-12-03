@@ -23,13 +23,6 @@ pub mod part1 {
         let chars: Vec<char> = line.chars().collect();
         let max = (chars.len() as i32) - 1;
 
-        let mut range: String = String::new();
-        for i in start..(end + 1) {
-            if i >= 0 && i <= max {
-                range.push(chars[i as usize]);
-            }
-        }
-
         for i in start..(end + 1) {
             if i >= 0 && i <= max && is_symbol(chars[i as usize]) {
                 return true;
@@ -244,4 +237,194 @@ pub mod part1 {
     }
 }
 
-// pub mod part1 {}
+pub mod part2 {
+    use std::{collections::HashSet, fs};
+
+    fn is_digit(letter: char) -> bool {
+        match letter {
+            '0' => return true,
+            '1' => return true,
+            '2' => return true,
+            '3' => return true,
+            '4' => return true,
+            '5' => return true,
+            '6' => return true,
+            '7' => return true,
+            '8' => return true,
+            '9' => return true,
+            _ => return false,
+        }
+    }
+
+    fn expand_digit(line: &str, start: usize) -> i32 {
+        let chars: Vec<char> = line.chars().collect();
+        let max = chars.len() - 1;
+
+        let mut result = String::new();
+
+        if start >= max || !is_digit(chars[start]) {
+            return 0;
+        }
+
+        for i in (0..start).rev() {
+            let letter = chars[i as usize];
+            if !is_digit(letter) {
+                break;
+            }
+
+            result.insert(0, letter);
+        }
+
+        for i in start..max + 1 {
+            let letter = chars[i as usize];
+            if !is_digit(letter) {
+                break;
+            }
+
+            result.push(letter);
+        }
+
+        match result.parse::<i32>() {
+            Ok(digit) => digit,
+            Err(_error) => 0,
+        }
+    }
+
+    fn gear_ratios(schematic: &str) -> i32 {
+        let mut result: i32 = 0;
+        let lines: Vec<&str> = schematic.lines().collect();
+        let lines_max = (lines.len() - 1) as i32;
+
+        for (line_idx, line) in schematic.lines().enumerate() {
+            for (letter_idx, letter) in line.chars().enumerate() {
+                if letter == '*' {
+                    let prev_line_idx = (line_idx as i32) - 1;
+                    let next_line_idx = (line_idx as i32) + 1;
+
+                    let mut prev_line_digit_left = 0;
+                    let mut prev_line_digit_middle = 0;
+                    let mut prev_line_digit_right = 0;
+                    if prev_line_idx >= 0 {
+                        if letter_idx > 0 {
+                            prev_line_digit_left =
+                                expand_digit(lines[prev_line_idx as usize], letter_idx - 1);
+                        }
+                        prev_line_digit_middle =
+                            expand_digit(lines[prev_line_idx as usize], letter_idx);
+                        prev_line_digit_right =
+                            expand_digit(lines[prev_line_idx as usize], letter_idx + 1);
+                    }
+
+                    let mut curr_line_digit_left = 0;
+                    if letter_idx > 0 {
+                        curr_line_digit_left = expand_digit(line, letter_idx - 1)
+                    }
+                    let curr_line_digit_right = expand_digit(line, letter_idx + 1);
+
+                    let mut next_line_digit_left = 0;
+                    let mut next_line_digit_middle = 0;
+                    let mut next_line_digit_right = 0;
+                    if next_line_idx <= lines_max {
+                        if letter_idx > 0 {
+                            next_line_digit_left =
+                                expand_digit(lines[next_line_idx as usize], letter_idx - 1);
+                        }
+                        next_line_digit_middle =
+                            expand_digit(lines[next_line_idx as usize], letter_idx);
+                        next_line_digit_right =
+                            expand_digit(lines[next_line_idx as usize], letter_idx + 1);
+                    }
+
+                    let unique = HashSet::from([
+                        prev_line_digit_left,
+                        prev_line_digit_middle,
+                        prev_line_digit_right,
+                        curr_line_digit_left,
+                        curr_line_digit_right,
+                        next_line_digit_left,
+                        next_line_digit_middle,
+                        next_line_digit_right,
+                    ]);
+
+                    let filtered: Vec<&i32> = unique.iter().filter(|&&digit| digit > 0).collect();
+
+                    if filtered.len() == 2 {
+                        let mut mult = 1;
+                        for digit in filtered {
+                            mult *= digit;
+                        }
+                        result += mult;
+                    }
+                }
+            }
+        }
+
+        result
+    }
+
+    pub fn run() {
+        let contents = fs::read_to_string("inputs/day3.txt").expect("File not found");
+
+        let result = gear_ratios(&contents);
+
+        println!("Day 3 Part 2: {}", result);
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_gear_ratio1() {
+            assert_eq!(
+              gear_ratios("467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598.."),
+              467835
+          );
+        }
+
+        #[test]
+        fn test_gear_ratio2() {
+            assert_eq!(gear_ratios("....832*105..@.."), 87360);
+        }
+
+        #[test]
+        fn test_gear_ratio3() {
+            assert_eq!(gear_ratios("....832.105..@..\n.......*........"), 87360);
+        }
+
+        #[test]
+        fn test_gear_ratio4() {
+            assert_eq!(gear_ratios("......832....@..\n.......*........"), 0);
+        }
+
+        #[test]
+        fn test_gear_ratio5() {
+            assert_eq!(gear_ratios("....832*.......\n........105..@."), 87360);
+        }
+
+        #[test]
+        fn test_gear_ratio6() {
+            assert_eq!(gear_ratios("*832.......\n.105..@...."), 87360);
+        }
+
+        #[test]
+        fn test_gear_ratio7() {
+            assert_eq!(gear_ratios("......832*\n.......105"), 87360);
+        }
+
+        #[test]
+        fn test_gear_ratio8() {
+            assert_eq!(gear_ratios(".......832\n......105*"), 87360);
+        }
+
+        #[test]
+        fn test_gear_ratio9() {
+            assert_eq!(gear_ratios(".+.................\n...442...997..187..\n....*....*.......=.\n...963.926.39../...\n...........*....63.\n.....591...127....."), 1353821);
+        }
+
+        #[test]
+        fn test_gear_ratio10() {
+            assert_eq!(gear_ratios("...9...\n...*...\n...3..."), 27);
+        }
+    }
+}
