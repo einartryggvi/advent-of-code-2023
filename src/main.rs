@@ -16,6 +16,7 @@ fn main() {
         ("3", "1") => day3::part1::run(),
         ("3", "2") => day3::part2::run(),
         ("4", "1") => day4::part1::run(),
+        ("4", "2") => day4::part2::run(),
         _ => println!("Invalid day or part"),
     }
 }
