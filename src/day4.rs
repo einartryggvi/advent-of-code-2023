@@ -2,8 +2,8 @@ use regex::Regex;
 
 struct Card {
     id: i32,
-    winning_numbers: Vec<i32>,
-    my_numbers: Vec<i32>,
+    won_numbers: i32,
+    points: i32,
 }
 
 impl Card {
@@ -15,55 +15,32 @@ impl Card {
                 .expect("Failed to parse Card")
                 .extract();
 
-        let winning_numbers: Vec<i32> = winning_numbers_str
-            .split_whitespace()
-            .map(|number| number.parse::<i32>().unwrap())
-            .collect();
-
         let my_numbers: Vec<i32> = my_numbers_str
             .split_whitespace()
             .map(|number| number.parse::<i32>().unwrap())
             .collect();
 
+        let won_numbers: Vec<i32> = winning_numbers_str
+            .split_whitespace()
+            .map(|number| number.parse::<i32>().unwrap())
+            .filter(|&winning_number| {
+                my_numbers
+                    .clone()
+                    .into_iter()
+                    .find(|&my_number| my_number == winning_number)
+                    .is_some()
+            })
+            .collect();
+
+        let points = won_numbers
+            .iter()
+            .fold(0, |acc, _| if acc == 0 { 1 } else { acc * 2 });
+
         Self {
             id: card_id.parse::<i32>().unwrap(),
-            winning_numbers,
-            my_numbers,
+            won_numbers: won_numbers.len() as i32,
+            points,
         }
-    }
-
-    fn won_numbers(&self) -> i32 {
-        let mut won_numbers: i32 = 0;
-
-        for winning_number in self.winning_numbers.clone() {
-            let have_number = self
-                .my_numbers
-                .clone()
-                .into_iter()
-                .find(|&my_number| my_number == winning_number)
-                .is_some();
-
-            if have_number {
-                won_numbers += 1;
-            }
-        }
-
-        won_numbers
-    }
-
-    fn points(&self) -> i32 {
-        let mut points: i32 = 0;
-
-        let won_numbers = self.won_numbers();
-        for _ in 0..won_numbers {
-            if points == 0 {
-                points = 1;
-            } else {
-                points *= 2;
-            }
-        }
-
-        points
     }
 }
 
@@ -84,7 +61,7 @@ impl Pile {
     }
 
     fn process_card(&self, card: &Card) -> i32 {
-        let won_numbers = card.won_numbers();
+        let won_numbers = card.won_numbers;
 
         if won_numbers > 0 {
             let mut result: i32 = won_numbers;
@@ -111,7 +88,7 @@ pub mod part1 {
         let mut result: i32 = 0;
         for line in cards.lines() {
             let card = Card::new(line);
-            result += card.points();
+            result += card.points;
         }
 
         result
