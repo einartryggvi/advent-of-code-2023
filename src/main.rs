@@ -34,5 +34,5 @@ fn parse_args() -> (String, String) {
     let day = &args[1];
     let part = &args[2];
 
-    return (day.to_string(), part.to_string());
+    (day.to_string(), part.to_string())
 }
