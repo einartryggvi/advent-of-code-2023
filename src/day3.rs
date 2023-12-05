@@ -3,20 +3,10 @@ pub mod part1 {
     use substring::Substring;
 
     fn is_symbol(letter: char) -> bool {
-        match letter {
-            '0' => return false,
-            '1' => return false,
-            '2' => return false,
-            '3' => return false,
-            '4' => return false,
-            '5' => return false,
-            '6' => return false,
-            '7' => return false,
-            '8' => return false,
-            '9' => return false,
-            '.' => return false,
-            _ => return true,
-        }
+        !matches!(
+            letter,
+            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+        )
     }
 
     fn is_symbol_in_range(line: &str, start: i32, end: i32) -> bool {
@@ -241,19 +231,10 @@ pub mod part2 {
     use std::{collections::HashSet, fs};
 
     fn is_digit(letter: char) -> bool {
-        match letter {
-            '0' => return true,
-            '1' => return true,
-            '2' => return true,
-            '3' => return true,
-            '4' => return true,
-            '5' => return true,
-            '6' => return true,
-            '7' => return true,
-            '8' => return true,
-            '9' => return true,
-            _ => return false,
-        }
+        matches!(
+            letter,
+            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+        )
     }
 
     fn expand_digit(line: &str, start: usize) -> i32 {
@@ -267,7 +248,7 @@ pub mod part2 {
         }
 
         for i in (0..start).rev() {
-            let letter = chars[i as usize];
+            let letter = chars[i];
             if !is_digit(letter) {
                 break;
             }
@@ -275,8 +256,7 @@ pub mod part2 {
             result.insert(0, letter);
         }
 
-        for i in start..max + 1 {
-            let letter = chars[i as usize];
+        for &letter in chars.iter().take(max + 1).skip(start) {
             if !is_digit(letter) {
                 break;
             }

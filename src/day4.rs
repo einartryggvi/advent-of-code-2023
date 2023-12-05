@@ -27,8 +27,7 @@ impl Card {
                 my_numbers
                     .clone()
                     .into_iter()
-                    .find(|&my_number| my_number == winning_number)
-                    .is_some()
+                    .any(|my_number| my_number == winning_number)
             })
             .collect();
 
@@ -54,7 +53,7 @@ impl Pile {
 
         for card in &self.cards {
             // Add one for the cards we had in the beginning.
-            result += 1 + self.process_card(&card);
+            result += 1 + self.process_card(card);
         }
 
         result
@@ -69,7 +68,7 @@ impl Pile {
             let end = start + won_numbers;
             for i in start..end {
                 let other_card = self.cards.iter().find(|card| card.id == i).unwrap();
-                result += self.process_card(&other_card);
+                result += self.process_card(other_card);
             }
 
             return result;

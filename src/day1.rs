@@ -5,11 +5,11 @@ pub mod part1 {
 
         let mut result = 0;
 
-        for line in contents.split("\n").into_iter() {
+        for line in contents.split('\n') {
             let mut first_digit = -1;
             let mut last_digit = -1;
 
-            for letter in line.split("").into_iter() {
+            for letter in line.split("") {
                 match letter.parse::<i32>() {
                     Ok(letter_numeric) => {
                         if first_digit < 0 {
@@ -42,7 +42,7 @@ pub mod part2 {
     fn line_to_numerics(line: &str) -> String {
         let mut result = "".to_string();
 
-        for letter in line.split("").into_iter() {
+        for letter in line.split("") {
             result.push_str(letter);
             result = result
                 .replace("one", "1")
@@ -63,7 +63,7 @@ pub mod part2 {
         let mut result = "".to_string();
 
         for letter in line.chars().rev() {
-            result = format!("{}{}", letter.to_string(), result);
+            result = format!("{}{}", letter, result);
             result = result
                 .replace("one", "1")
                 .replace("two", "2")
@@ -86,7 +86,7 @@ pub mod part2 {
         let line_numerics = line_to_numerics(line);
         let line_numerics_reverse = line_to_numerics_reverse(line);
 
-        for letter in line_numerics.split("").into_iter() {
+        for letter in line_numerics.split("") {
             match letter.parse::<i32>() {
                 Ok(letter_numeric) => {
                     if first_digit < 0 {
@@ -97,7 +97,7 @@ pub mod part2 {
             }
         }
 
-        for letter in line_numerics_reverse.split("").into_iter() {
+        for letter in line_numerics_reverse.split("") {
             match letter.parse::<i32>() {
                 Ok(letter_numeric) => {
                     last_digit = letter_numeric;
@@ -123,7 +123,7 @@ pub mod part2 {
 
         let mut result = 0;
 
-        for line in contents.split("\n").into_iter() {
+        for line in contents.split('\n') {
             result += line_to_digit(line)
         }
 

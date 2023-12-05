@@ -165,8 +165,8 @@ pub mod part2 {
             let seed = find_source(seed_to_soil, soil);
 
             for (start, length) in &seed_tuples {
-                let range_start = start.clone();
-                let range_end = range_start + length.clone();
+                let range_start = *start;
+                let range_end = range_start + *length;
                 if seed >= range_start && seed < range_end {
                     return location;
                 }
