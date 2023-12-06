@@ -135,8 +135,8 @@ pub mod part2 {
             })
             .collect();
 
-        let time = lines_parsed[0].replace(" ", "").parse::<u64>().unwrap();
-        let best_distance = lines_parsed[1].replace(" ", "").parse::<u64>().unwrap();
+        let time = lines_parsed[0].replace(' ', "").parse::<u64>().unwrap();
+        let best_distance = lines_parsed[1].replace(' ', "").parse::<u64>().unwrap();
 
         let mut count_winnable = 0;
         for t in 0..(time + 1) {
