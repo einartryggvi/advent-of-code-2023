@@ -3,6 +3,38 @@ fn calculate_distance(time: u64, hold: u64) -> u64 {
     hold * time_left
 }
 
+fn find_roots(a: f64, b: f64, c: f64) -> Option<(f64, f64)> {
+    let discriminant = b * b - 4.0 * a * c;
+
+    if discriminant < 0.0 {
+        // No real roots
+        None
+    } else {
+        // Calculating the two roots
+        let root1 = (-b + discriminant.sqrt()) / (2.0 * a);
+        let root2 = (-b - discriminant.sqrt()) / (2.0 * a);
+        Some((root1, root2))
+    }
+}
+
+fn find_winning_count(time: u64, best_distance: u64) -> Option<u64> {
+    match find_roots(-1.0, time as f64, -1.0 * (best_distance as f64)) {
+        Some((root1, root2)) => {
+            let mut start = root1.ceil() as i64;
+            if start as f64 == root1 {
+                start += 1;
+            }
+            let mut end = root2.floor() as i64;
+            if end as f64 == root2 {
+                end -= 1;
+            }
+
+            Some((end - start + 1) as u64)
+        }
+        None => None,
+    }
+}
+
 pub mod part1 {
     use super::*;
     use regex::Regex;
@@ -35,18 +67,27 @@ pub mod part1 {
 
         let mut margin_of_error: Vec<u64> = Vec::new();
 
+        // Brute force
+        // for (time, best_distance) in games {
+        //     let mut count_winnable: u64 = 0;
+
+        //     for t in 0..(time + 1) {
+        //         let hold = time - t;
+
+        //         if calculate_distance(time, hold) > best_distance {
+        //             count_winnable += 1;
+        //         }
+        //     }
+
+        //     margin_of_error.push(count_winnable);
+        // }
+
+        // Quadratic equation
         for (time, best_distance) in games {
-            let mut count_winnable: u64 = 0;
-
-            for t in 0..(time + 1) {
-                let hold = time - t;
-
-                if calculate_distance(time, hold) > best_distance {
-                    count_winnable += 1;
-                }
+            match find_winning_count(time, best_distance) {
+                Some(won_games) => margin_of_error.push(won_games),
+                None => {}
             }
-
-            margin_of_error.push(count_winnable);
         }
 
         margin_of_error.iter().product()
@@ -138,16 +179,23 @@ pub mod part2 {
         let time = lines_parsed[0].replace(' ', "").parse::<u64>().unwrap();
         let best_distance = lines_parsed[1].replace(' ', "").parse::<u64>().unwrap();
 
-        let mut count_winnable = 0;
-        for t in 0..(time + 1) {
-            let hold = time - t;
+        // Brute force
+        // let mut count_winnable = 0;
+        // for t in 0..(time + 1) {
+        //     let hold = time - t;
 
-            if calculate_distance(time, hold) > best_distance {
-                count_winnable += 1;
-            }
+        //     if calculate_distance(time, hold) > best_distance {
+        //         count_winnable += 1;
+        //     }
+        // }
+
+        // count_winnable
+
+        // Quadratic equation
+        match find_winning_count(time, best_distance) {
+            Some(won_games) => won_games,
+            None => 0,
         }
-
-        count_winnable
     }
 
     pub fn run() {
