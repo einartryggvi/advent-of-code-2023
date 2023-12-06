@@ -84,9 +84,8 @@ pub mod part1 {
 
         // Quadratic equation
         for (time, best_distance) in games {
-            match find_winning_count(time, best_distance) {
-                Some(won_games) => margin_of_error.push(won_games),
-                None => {}
+            if let Some(won_games) = find_winning_count(time, best_distance) {
+                margin_of_error.push(won_games)
             }
         }
 
@@ -192,10 +191,7 @@ pub mod part2 {
         // count_winnable
 
         // Quadratic equation
-        match find_winning_count(time, best_distance) {
-            Some(won_games) => won_games,
-            None => 0,
-        }
+        find_winning_count(time, best_distance).unwrap_or(0)
     }
 
     pub fn run() {
