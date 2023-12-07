@@ -41,48 +41,44 @@ fn calculate_hand_rank_wildcard(cards: &Vec<Card>, wildcard: bool) -> u64 {
 }
 
 fn calculate_hand_rank(cards: &Vec<Card>) -> u64 {
-    let mut counts: HashMap<u64, u64> = HashMap::new();
-
     let mut cards_sorted = (*cards).clone();
-    cards_sorted.sort_by_key(|card| card.rank);
+    cards_sorted.sort();
 
-    for card in cards_sorted {
-        counts.insert(card.rank, counts.get(&card.rank).unwrap_or(&0) + 1);
-    }
+    let counts = cards.into_iter().fold(HashMap::new(), |mut acc, card| {
+        *acc.entry(card.rank).or_insert(0) += 1;
+        acc
+    });
 
-    let mut counts_vec: Vec<u64> = counts.iter().map(|(_, &count)| count).collect();
-
-    counts_vec.sort();
-
-    let real_counts: &Vec<&u64> = &counts_vec.iter().rev().collect();
+    let mut real_counts: Vec<u64> = counts.values().cloned().collect();
+    real_counts.sort_by(|a, b| b.cmp(a));
 
     // Five of a kind, where all five cards have the same label: AAAAA
-    if *real_counts[0] == 5 {
+    if real_counts[0] == 5 {
         return 7;
     }
 
     // Four of a kind, where four cards have the same label and one card has a different label: AA8AA
-    if *real_counts[0] == 4 {
+    if real_counts[0] == 4 {
         return 6;
     }
 
     // Full house, where three cards have the same label, and the remaining two cards share a different label: 23332
-    if *real_counts[0] == 3 && *real_counts[1] == 2 {
+    if real_counts[0] == 3 && real_counts[1] == 2 {
         return 5;
     }
 
     // Three of a kind, where three cards have the same label, and the remaining two cards are each different from any other card in the hand: TTT98
-    if *real_counts[0] == 3 {
+    if real_counts[0] == 3 {
         return 4;
     }
 
     // Two pair, where two cards share one label, two other cards share a second label, and the remaining card has a third label: 23432
-    if *real_counts[0] == 2 && *real_counts[1] == 2 {
+    if real_counts[0] == 2 && real_counts[1] == 2 {
         return 3;
     }
 
     // One pair, where two cards share one label, and the other three cards have a different label from the pair and each other: A23A4
-    if *real_counts[0] == 2 {
+    if real_counts[0] == 2 {
         return 2;
     }
 
@@ -125,6 +121,18 @@ impl Card {
     }
 }
 
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.rank.cmp(&other.rank)
+    }
+}
+
+impl PartialOrd for Card {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Hand {
     cards: Vec<Card>,
@@ -156,7 +164,7 @@ impl Ord for Hand {
 
 impl PartialOrd for Hand {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(compare_hands(self, other))
+        Some(self.cmp(other))
     }
 }
 
