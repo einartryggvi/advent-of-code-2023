@@ -65,21 +65,21 @@ fn calculate_hand_rank(cards: &Vec<Card>) -> u64 {
 }
 
 fn compare_hands(a: &Hand, b: &Hand) -> Ordering {
-    if a.rank > b.rank {
-        return Ordering::Greater;
-    } else if a.rank < b.rank {
-        return Ordering::Less;
-    }
+    match a.rank.cmp(&b.rank) {
+        Ordering::Greater => Ordering::Greater,
+        Ordering::Less => Ordering::Less,
+        Ordering::Equal => {
+            for (a, b) in a.cards.iter().zip(b.cards.iter()) {
+                match a.rank.cmp(&b.rank) {
+                    Ordering::Greater => return Ordering::Greater,
+                    Ordering::Less => return Ordering::Less,
+                    Ordering::Equal => {}
+                }
+            }
 
-    for (a, b) in a.cards.iter().zip(b.cards.iter()) {
-        if a.rank > b.rank {
-            return Ordering::Greater;
-        } else if a.rank < b.rank {
-            return Ordering::Less;
+            Ordering::Less
         }
     }
-
-    Ordering::Less
 }
 
 #[derive(Clone, Debug)]
@@ -109,8 +109,8 @@ impl Hand {
         let parts: Vec<&str> = string.split_whitespace().collect();
         let cards: Vec<Card> = parts[0]
             .split("")
-            .filter(|s| s.len() > 0)
-            .map(|s| Card::parse(s))
+            .filter(|s| !s.is_empty())
+            .map(Card::parse)
             .collect();
 
         let bid = parts[1].parse::<u64>().unwrap();
@@ -134,7 +134,7 @@ pub mod part1 {
 
         let mut winnings: Vec<u64> = vec![];
 
-        hands.sort_by(|a, b| compare_hands(a, b));
+        hands.sort_by(compare_hands);
 
         for (i, hand) in hands.iter().enumerate() {
             winnings.push((i as u64 + 1) * hand.bid);
