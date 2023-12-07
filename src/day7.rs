@@ -44,7 +44,7 @@ fn calculate_hand_rank(cards: &Vec<Card>) -> u64 {
     let mut cards_sorted = (*cards).clone();
     cards_sorted.sort();
 
-    let counts = cards.into_iter().fold(HashMap::new(), |mut acc, card| {
+    let counts = cards.iter().fold(HashMap::new(), |mut acc, card| {
         *acc.entry(card.rank).or_insert(0) += 1;
         acc
     });
