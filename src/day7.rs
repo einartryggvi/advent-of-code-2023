@@ -108,7 +108,7 @@ fn compare_hands(a: &Hand, b: &Hand) -> Ordering {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 struct Card {
     rank: u64,
 }
@@ -125,7 +125,7 @@ impl Card {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 struct Hand {
     cards: Vec<Card>,
     rank: u64,
@@ -148,6 +148,18 @@ impl Hand {
     }
 }
 
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        compare_hands(self, other)
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(compare_hands(self, other))
+    }
+}
+
 pub mod part1 {
     use super::*;
     use std::fs;
@@ -160,15 +172,13 @@ pub mod part1 {
             hands.push(hand);
         }
 
-        let mut winnings: Vec<u64> = vec![];
+        hands.sort();
 
-        hands.sort_by(compare_hands);
-
-        for (i, hand) in hands.iter().enumerate() {
-            winnings.push((i as u64 + 1) * hand.bid);
-        }
-
-        winnings.iter().sum()
+        hands
+            .into_iter()
+            .enumerate()
+            .map(|(i, h)| (i + 1) as u64 * h.bid)
+            .sum()
     }
 
     pub fn run() {
@@ -251,15 +261,13 @@ pub mod part2 {
             hands.push(hand);
         }
 
-        let mut winnings: Vec<u64> = vec![];
+        hands.sort();
 
-        hands.sort_by(compare_hands);
-
-        for (i, hand) in hands.iter().enumerate() {
-            winnings.push((i as u64 + 1) * hand.bid);
-        }
-
-        winnings.iter().sum()
+        hands
+            .into_iter()
+            .enumerate()
+            .map(|(i, h)| (i + 1) as u64 * h.bid)
+            .sum()
     }
 
     pub fn run() {
