@@ -8,22 +8,14 @@ struct Node {
 }
 
 impl Node {
-    fn new() -> Self {
-        Self {
-            node: String::new(),
-            left: String::new(),
-            right: String::new(),
-        }
-    }
-
     fn parse(node: &str) -> Self {
         let (part1, part2) = node.split_once(" = ").unwrap();
         let (left_node, right_node) = part2.split_once(", ").unwrap();
 
         Self {
             node: part1.to_string(),
-            left: left_node.to_string().replace("(", ""),
-            right: right_node.to_string().replace(")", ""),
+            left: left_node.to_string().replace('(', ""),
+            right: right_node.to_string().replace(')', ""),
         }
     }
 }
@@ -44,7 +36,7 @@ impl Map {
             .filter(|s| !s.is_empty())
             .map(|s| s.to_string())
             .collect();
-        let nodes: Vec<Node> = nodes_str.lines().map(|node| Node::parse(node)).collect();
+        let nodes: Vec<Node> = nodes_str.lines().map(Node::parse).collect();
         let num_directions = directions.len();
 
         let mut nodes_map: HashMap<String, Node> = HashMap::new();
@@ -139,18 +131,11 @@ pub mod part1 {
 
 pub mod part2 {
     use super::*;
+    use num::integer::lcm;
     use std::fs;
 
-    fn gcd(a: u64, b: u64) -> u64 {
-        if b == 0 {
-            a
-        } else {
-            gcd(b, a % b)
-        }
-    }
-
-    fn lcd_vec(numbers: Vec<u64>) -> u64 {
-        numbers.into_iter().fold(1, |lcm, n| lcm * n / gcd(lcm, n))
+    fn lcm_vec(numbers: Vec<u64>) -> u64 {
+        numbers.into_iter().fold(1, lcm)
     }
 
     fn count_steps(contents: &str) -> u64 {
@@ -159,7 +144,7 @@ pub mod part2 {
         let start_nodes: Vec<&Node> = map
             .nodes
             .iter()
-            .filter(|node| node.node.ends_with("A"))
+            .filter(|node| node.node.ends_with('A'))
             .collect();
 
         let mut counts: Vec<u64> = vec![];
@@ -168,7 +153,7 @@ pub mod part2 {
             let mut count: u64 = 0;
             let mut dir_key: usize = 0;
 
-            while !next_node.node.ends_with("Z") {
+            while !next_node.node.ends_with('Z') {
                 let direction = map.get_direction(dir_key);
                 next_node = if direction == "L" {
                     map.find_node(&next_node.left)
@@ -183,7 +168,7 @@ pub mod part2 {
             counts.push(count);
         }
 
-        lcd_vec(counts)
+        lcm_vec(counts)
     }
 
     pub fn run() {
