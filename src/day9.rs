@@ -1,5 +1,5 @@
 fn extrapolate_digits(digits: &Vec<i64>, direction: &ExtrapolateDirection) -> i64 {
-    if digits.iter().filter(|&&digit| digit != 0).count() == 0 {
+    if digits.iter().all(|&digit| digit == 0) {
         return 0;
     }
 
@@ -22,17 +22,18 @@ fn extrapolate_digits(digits: &Vec<i64>, direction: &ExtrapolateDirection) -> i6
     digits[key] + extrapolate_digits(&next, direction)
 }
 
-fn extrapolate(contents: &str, direction: &ExtrapolateDirection) -> i64 {
-    let mut result: i64 = 0;
-    for line in contents.lines() {
-        let digits: Vec<i64> = line
-            .split_whitespace()
-            .map(|s| s.parse::<i64>().unwrap())
-            .collect();
-        result += extrapolate_digits(&digits, direction);
-    }
+fn parse_line(line: &str) -> Vec<i64> {
+    line.split_whitespace()
+        .map(|s| s.parse::<i64>().unwrap())
+        .collect()
+}
 
-    result
+fn extrapolate(contents: &str, direction: &ExtrapolateDirection) -> i64 {
+    contents
+        .lines()
+        .map(parse_line)
+        .map(|digits| extrapolate_digits(&digits, direction))
+        .sum()
 }
 
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
