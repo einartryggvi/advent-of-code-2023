@@ -60,42 +60,36 @@ impl Map {
     fn find_node(&self, key: &String) -> &Node {
         self.nodes_map.get(key).unwrap()
     }
+
+    fn count_steps(&self, initial_node: &Node) -> u64 {
+        let mut next_node = initial_node;
+        let mut count: u64 = 0;
+        let mut dir_key: usize = 0;
+
+        while !next_node.node.ends_with('Z') {
+            let direction = self.get_direction(dir_key);
+            next_node = if direction == "L" {
+                self.find_node(&next_node.left)
+            } else {
+                self.find_node(&next_node.right)
+            };
+
+            dir_key += 1;
+            count += 1;
+        }
+
+        count
+    }
 }
 pub mod part1 {
     use super::*;
     use std::fs;
 
-    fn count_steps(contents: &str) -> i32 {
-        let mut next_node = "AAA".to_string();
-        let mut count: i32 = 0;
-        let mut dir_key: usize = 0;
-
+    fn count_steps(contents: &str) -> u64 {
         let map = Map::parse(contents);
+        let initial_node = map.find_node(&"AAA".to_string());
 
-        while next_node != "ZZZ" {
-            for node in &map.nodes {
-                let direction = map.get_direction(dir_key);
-
-                if next_node != node.node {
-                    continue;
-                }
-
-                dir_key += 1;
-                count += 1;
-
-                next_node = if direction == "L" {
-                    node.left.clone()
-                } else {
-                    node.right.clone()
-                };
-
-                if next_node == "ZZZ" {
-                    break;
-                }
-            }
-        }
-
-        count
+        map.count_steps(initial_node)
     }
 
     pub fn run() {
@@ -134,41 +128,14 @@ pub mod part2 {
     use num::integer::lcm;
     use std::fs;
 
-    fn lcm_vec(numbers: Vec<u64>) -> u64 {
-        numbers.into_iter().fold(1, lcm)
-    }
-
     fn count_steps(contents: &str) -> u64 {
         let map = Map::parse(contents);
 
-        let start_nodes: Vec<&Node> = map
-            .nodes
+        map.nodes
             .iter()
             .filter(|node| node.node.ends_with('A'))
-            .collect();
-
-        let mut counts: Vec<u64> = vec![];
-        for node in &start_nodes {
-            let mut next_node = *node;
-            let mut count: u64 = 0;
-            let mut dir_key: usize = 0;
-
-            while !next_node.node.ends_with('Z') {
-                let direction = map.get_direction(dir_key);
-                next_node = if direction == "L" {
-                    map.find_node(&next_node.left)
-                } else {
-                    map.find_node(&next_node.right)
-                };
-
-                dir_key += 1;
-                count += 1;
-            }
-
-            counts.push(count);
-        }
-
-        lcm_vec(counts)
+            .map(|initial_node| map.count_steps(initial_node))
+            .fold(1, lcm)
     }
 
     pub fn run() {
