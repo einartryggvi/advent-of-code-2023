@@ -1,23 +1,90 @@
+use std::collections::HashMap;
+
+#[derive(Debug)]
+struct Node {
+    node: String,
+    left: String,
+    right: String,
+}
+
+impl Node {
+    fn new() -> Self {
+        Self {
+            node: String::new(),
+            left: String::new(),
+            right: String::new(),
+        }
+    }
+
+    fn parse(node: &str) -> Self {
+        let (part1, part2) = node.split_once(" = ").unwrap();
+        let (left_node, right_node) = part2.split_once(", ").unwrap();
+
+        Self {
+            node: part1.to_string(),
+            left: left_node.to_string().replace("(", ""),
+            right: right_node.to_string().replace(")", ""),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Map {
+    directions: Vec<String>,
+    num_directions: usize,
+    nodes: Vec<Node>,
+    nodes_map: HashMap<String, Node>,
+}
+
+impl Map {
+    fn parse(contents: &str) -> Self {
+        let (directions_str, nodes_str) = contents.split_once("\n\n").unwrap();
+        let directions: Vec<String> = directions_str
+            .split("")
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_string())
+            .collect();
+        let nodes: Vec<Node> = nodes_str.lines().map(|node| Node::parse(node)).collect();
+        let num_directions = directions.len();
+
+        let mut nodes_map: HashMap<String, Node> = HashMap::new();
+        for line in nodes_str.lines() {
+            let node = Node::parse(line);
+            nodes_map.insert(node.node.clone(), node);
+        }
+
+        Self {
+            directions,
+            num_directions,
+            nodes,
+            nodes_map,
+        }
+    }
+
+    fn get_direction(&self, dir_key: usize) -> String {
+        self.directions[dir_key % self.num_directions].clone()
+    }
+
+    fn find_node(&self, key: &String) -> &Node {
+        self.nodes_map.get(key).unwrap()
+    }
+}
 pub mod part1 {
+    use super::*;
     use std::fs;
 
     fn count_steps(contents: &str) -> i32 {
-        let (directions_str, nodes_str) = contents.split_once("\n\n").unwrap();
-        let directions: Vec<&str> = directions_str.split("").filter(|s| !s.is_empty()).collect();
-        let nodes = &nodes_str.lines();
-        let num_directions = directions.len();
-
         let mut next_node = "AAA".to_string();
         let mut count: i32 = 0;
         let mut dir_key: usize = 0;
 
-        while next_node != "ZZZ" {
-            for node in nodes.clone() {
-                let direction = directions[dir_key % num_directions];
-                let (part1, part2) = node.split_once(" = ").unwrap();
-                let (left_node, right_node) = part2.split_once(", ").unwrap();
+        let map = Map::parse(contents);
 
-                if next_node != part1 {
+        while next_node != "ZZZ" {
+            for node in &map.nodes {
+                let direction = map.get_direction(dir_key);
+
+                if next_node != node.node {
                     continue;
                 }
 
@@ -25,9 +92,9 @@ pub mod part1 {
                 count += 1;
 
                 next_node = if direction == "L" {
-                    left_node.replace("(", "")
+                    node.left.clone()
                 } else {
-                    right_node.replace(")", "")
+                    node.right.clone()
                 };
 
                 if next_node == "ZZZ" {
@@ -71,16 +138,58 @@ pub mod part1 {
 }
 
 pub mod part2 {
+    use super::*;
     use std::fs;
 
-    fn do_stuff(contents: &str) -> i32 {
-        contents.len() as i32
+    fn gcd(a: u64, b: u64) -> u64 {
+        if b == 0 {
+            a
+        } else {
+            gcd(b, a % b)
+        }
+    }
+
+    fn lcd_vec(numbers: Vec<u64>) -> u64 {
+        numbers.into_iter().fold(1, |lcm, n| lcm * n / gcd(lcm, n))
+    }
+
+    fn count_steps(contents: &str) -> u64 {
+        let map = Map::parse(contents);
+
+        let start_nodes: Vec<&Node> = map
+            .nodes
+            .iter()
+            .filter(|node| node.node.ends_with("A"))
+            .collect();
+
+        let mut counts: Vec<u64> = vec![];
+        for node in &start_nodes {
+            let mut next_node = *node;
+            let mut count: u64 = 0;
+            let mut dir_key: usize = 0;
+
+            while !next_node.node.ends_with("Z") {
+                let direction = map.get_direction(dir_key);
+                next_node = if direction == "L" {
+                    map.find_node(&next_node.left)
+                } else {
+                    map.find_node(&next_node.right)
+                };
+
+                dir_key += 1;
+                count += 1;
+            }
+
+            counts.push(count);
+        }
+
+        lcd_vec(counts)
     }
 
     pub fn run() {
         let contents = fs::read_to_string("inputs/day8.txt").expect("File not found");
 
-        let result = do_stuff(&contents);
+        let result = count_steps(&contents);
 
         println!("Day 8 Part 2: {}", result);
     }
@@ -90,8 +199,13 @@ pub mod part2 {
         use super::*;
 
         #[test]
-        fn test_day8_part2() {
-            assert_eq!(do_stuff(""), 0);
+        fn test_day8_part2a() {
+            assert_eq!(
+                count_steps(
+                    "LR\n\n11A = (11B, XXX)\n11B = (XXX, 11Z)\n11Z = (11B, XXX)\n22A = (22B, XXX)\n22B = (22C, 22C)\n22C = (22Z, 22Z)\n22Z = (22B, 22B)\nXXX = (XXX, XXX)"
+                ),
+                6
+            );
         }
     }
 }
