@@ -1,4 +1,4 @@
-use std::{collections::HashMap, vec};
+use std::vec;
 
 #[derive(Debug)]
 struct Map {
@@ -77,17 +77,6 @@ impl Map {
         next_tiles
     }
 
-    fn check_end_of_loop(&self, next_tiles: &Vec<&Tile>) -> bool {
-        next_tiles
-            .iter()
-            .fold(HashMap::new(), |mut acc, tile| {
-                *acc.entry((tile.x, tile.y)).or_insert(0) += 1;
-                acc
-            })
-            .values()
-            .any(|&count| count == 2)
-    }
-
     fn traverse_from_loop(&self, x: usize, y: usize) -> u64 {
         let mut count: u64 = 0;
 
@@ -99,11 +88,6 @@ impl Map {
 
         while !next_tiles.is_empty() {
             count += 1;
-
-            // If the same tile appears twic in next tiles, we must be at the end (middle) of the loop
-            if self.check_end_of_loop(&next_tiles) {
-                return count;
-            }
 
             let mut new_next_tiles = vec![];
 
