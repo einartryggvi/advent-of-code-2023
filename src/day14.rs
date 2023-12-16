@@ -127,9 +127,6 @@ pub mod part2 {
         }
         rotate_matrix(matrix);
         rotate_matrix(matrix);
-        // rotate_matrix(matrix);
-        // rotate_matrix(matrix);
-        // rotate_matrix(matrix);
     }
 
     fn calculate_cycle_load(contents: &str) -> usize {
